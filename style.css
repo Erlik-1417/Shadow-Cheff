@@ -1,0 +1,50 @@
+:root {
+  color-scheme: dark;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #e5e5e1;
+  background: #101113;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 2px solid #dca99a; outline-offset: 4px; }
+.shell { max-width: 1120px; margin: auto; padding: 0 32px; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 88px; border-bottom: 1px solid #303337; }
+.brand { color: #eee; font-size: 23px; text-decoration: none; }
+header > span, .eyebrow { color: #b99a8f; font-size: 12px; }
+.intro { padding: 64px 0 48px; }
+h1, h2, strong { font-weight: 500; }
+h1 { font-size: 40px; margin: 16px 0; }
+.intro p, .section-note { color: #a7aaad; line-height: 1.8; font-size: 14px; }
+.workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+h2 { font-size: 24px; margin: 0 0 12px; }
+.candidates { display: grid; gap: 12px; margin-top: 24px; }
+.candidate { width: 100%; min-height: 100px; display: flex; align-items: center; gap: 16px; padding: 20px; border: 1px solid transparent; border-radius: 4px; background: #191b1e; color: #e5e5e1; text-align: left; }
+.candidate:hover { background: #23262a; }
+.candidate.selected { border-color: #a37568; background: #292223; }
+.initials { display: grid; place-items: center; width: 40px; height: 44px; background: #303338; border-radius: 4px; font-size: 12px; }
+.candidate strong, .candidate small { display: block; }
+.candidate strong { font-size: 15px; }
+.candidate small { margin-top: 8px; color: #a7aaad; font-size: 11px; }
+.power { margin-left: auto; text-align: right; font-size: 22px; }
+.dossier { background: #191b1e; padding: 32px; border-radius: 4px; }
+.dossier h2 { margin: 20px 0 12px; font-size: 30px; }
+.role { color: #b7a18a; font-size: 13px; }
+.dossier p { color: #a7aaad; line-height: 1.8; font-size: 14px; margin: 24px 0; }
+.stat { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; margin-top: 32px; }
+.stat span { color: #a7aaad; }
+.meter { height: 4px; background: #303338; margin-top: 12px; }
+.meter span { display: block; height: 100%; background: #b7a18a; }
+.dossier .development-note { margin: 32px 0 0; padding-top: 24px; border-top: 1px solid #303337; font-size: 12px; }
+footer { margin-top: 64px; border-top: 1px solid #303337; padding: 24px 0; color: #a7aaad; font-size: 11px; }
+@media (max-width: 720px) {
+  .shell { padding: 0 20px; }
+  header { min-height: 76px; }
+  .brand { font-size: 20px; }
+  header > span { font-size: 10px; }
+  .intro { padding: 40px 0 32px; }
+  h1 { font-size: 30px; }
+  .workspace { grid-template-columns: 1fr; gap: 32px; }
+  .candidate { padding: 16px; }
+  .dossier { padding: 24px; }
+}
