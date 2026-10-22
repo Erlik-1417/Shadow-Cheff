@@ -1,16 +1,14 @@
 # Gölge Şef
 
-Tarayıcı tabanlı bir siyasi strateji oyunu üzerinde çalışıyorum. Oyuncunun bakanları araştırıp iktidar mücadelesine yön verdiği bir oyun hedefliyorum.
+Türkçe, tarayıcı tabanlı siyasi strateji oyunu. Üç bakan arasındaki iktidar mücadelesinde bilgi topla, belgeleri incele ve destekleyeceğin adayı belirle. Oyun yedi gün sürer; her gün dört aksiyon puanın (AP) vardır.
 
-## Mevcut durum
+## Kullanılan teknolojiler
 
-İlk arayüz prototipi. Üç bakanın kartları görüntülenebilir; kart seçilince ilgili bakanın profili açılır. Masaüstü ve mobil ekranlar için temel düzen hazır.
-
-Operasyon emirleri, soruşturmalar, gece döngüsü ve kayıt sistemi henüz bu sürümde yok.
+JavaScript, Vite, HTML ve CSS. Testler için Node.js test runner ve jsdom kullanılır.
 
 ## Çalıştırma
 
-Node.js ve npm gereklidir.
+Node.js ve npm kurulu olmalıdır.
 
 ```bash
 npm ci
@@ -19,14 +17,23 @@ npm run dev
 
 Terminalde verilen adresi tarayıcıda aç.
 
-## Derleme
+## Test ve derleme
 
 ```bash
+npm test
 npm run build
 ```
 
-Üretim çıktısı `dist/` klasörüne oluşturulur.
+Derleme dosyaları `dist/` klasörüne oluşturulur.
 
-## Teknolojiler
+## Oynanış
 
-JavaScript, HTML, CSS ve Vite.
+Her operasyonda başlangıç seçim güçleri 30–56, ilişkiler 20–75 arasında belirlenir. Bakanlara altı kişilik arketipinden üçü dağıtılır. On sekiz olaydan bakan başına üç farklı dosya gelir. Belgeleri eşleştirip ihbarın desteklenip desteklenmediğine karar verirsin.
+
+Sızıntı önce kaynak arayışı başlatır. Şantaj kimliğini doğrudan açık eder. Somut soruşturmayı bastırmak dosyanın yaşına göre 2, 3 veya 4 AP harcar.
+
+v0.4 kayıtları ayrı tutulur; önceki sürümlerin kayıtları silinmez.
+
+## Mevcut durum
+
+Proje geliştirme aşamasındadır. Oyun bu tarayıcıda otomatik kaydedilir. Firebase hesap ve bulut kayıt entegrasyonu henüz etkin değildir.
