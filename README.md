@@ -36,4 +36,4 @@ v0.4 kayıtları ayrı tutulur; önceki sürümlerin kayıtları silinmez.
 
 ## Mevcut durum
 
-Proje geliştirme aşamasındadır. Oyun bu tarayıcıda otomatik kaydedilir. Firebase hesap ve bulut kayıt entegrasyonu henüz etkin değildir.
+Proje geliştirme aşamasındadır. Oyun bu tarayıcıda otomatik kaydedilir. Firebase bağlantı adaptörü ve Firestore kuralları hazırdır; Firebase projesi oluşturulmadığı için bulut kayıt özelliği henüz etkin değildir.
