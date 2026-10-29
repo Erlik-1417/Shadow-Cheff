@@ -65,7 +65,7 @@ import {
   relation,
   caseData, DAYS, commandInfo, forecast, canImproveRelation, validSave, personalities, containmentCost,
 } from "./game.js";
-import { applyLanguage, currentLanguage, toggleLanguage } from "./i18n.js";
+import { applyLanguage, currentLanguage, toggleLanguage } from "./languages.js";
 let state = fresh();
 let initialSaveMessage = "";
 try {

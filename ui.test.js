@@ -37,8 +37,8 @@ test("UI completes evidence review, pressure confirmation and a night transition
       `from ${JSON.stringify(new URL("./game.js", import.meta.url).href)}`,
     )
     .replace(
-      'from "./i18n.js"',
-      `from ${JSON.stringify(new URL("./i18n.js", import.meta.url).href)}`,
+      'from "./languages.js"',
+      `from ${JSON.stringify(new URL("./languages.js", import.meta.url).href)}`,
     );
   await import(
     "data:text/javascript;base64," + Buffer.from(source).toString("base64")
