@@ -35,6 +35,10 @@ test("UI completes evidence review, pressure confirmation and a night transition
     .replace(
       'from "./game.js"',
       `from ${JSON.stringify(new URL("./game.js", import.meta.url).href)}`,
+    )
+    .replace(
+      'from "./i18n.js"',
+      `from ${JSON.stringify(new URL("./i18n.js", import.meta.url).href)}`,
     );
   await import(
     "data:text/javascript;base64," + Buffer.from(source).toString("base64")
@@ -45,6 +49,10 @@ test("UI completes evidence review, pressure confirmation and a night transition
     assert.equal(b.disabled, false, selector);
     b.click();
   };
+  assert.match(document.body.textContent, /Kimse masum kalmayacak/);
+  document.querySelector("[data-language]").click();
+  assert.match(document.body.textContent, /No one stays innocent/);
+  document.querySelector("[data-language]").click();
   assert.match(document.body.textContent, /Kimse masum kalmayacak/);
   click('[data-select="arin"]');
   click("[data-back]");

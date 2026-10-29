@@ -69,6 +69,8 @@ header { min-height: 76px; display: flex; align-items: center; justify-content: 
 .breadcrumb span { margin: 0 8px; }
 .header-tools { display: flex; align-items: center; gap: 20px; }
 .prototype { font-size: 10px; color: #b9a49c; }
+.language-toggle { border: 1px solid var(--line); background: transparent; color: var(--muted); padding: 7px 10px; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.language-toggle:hover { color: var(--text); border-color: var(--muted); }
 .icon-btn { display: grid; place-items: center; background: transparent; color: var(--muted); border: 0; width: 44px; height: 44px; }
 .content { max-width: 1500px; padding: 32px 40px 0; margin: auto; }
 .heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 36px; }

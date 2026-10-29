@@ -65,6 +65,7 @@ import {
   relation,
   caseData, DAYS, commandInfo, forecast, canImproveRelation, validSave, personalities, containmentCost,
 } from "./game.js";
+import { applyLanguage, currentLanguage, toggleLanguage } from "./i18n.js";
 let state = fresh();
 let initialSaveMessage = "";
 try {
@@ -216,6 +217,13 @@ function render() {
   const previousFocus = focusSelector(document.activeElement);
   if (!hadDialog && (modal || state.ended)) dialogTrigger = previousFocus;
   el.innerHTML = `<div class="shell"><aside class="sidebar"><a class="brand" href="#">${icon("fingerprint")}<span>GÖLGE ŞEF<small>MİLLÎ İSTİHBARAT DAİRESİ</small></span></a><div class="classification"><span></span> HAT DİNLENİYOR OLABİLİR</div><div class="nav-caption">YETKİ / OMEGA</div><nav><button data-tab="desk" class="${tab === "desk" ? "selected" : ""}" aria-label="Operasyon masası">${icon("panels-top-left")}Operasyon masası<span>01</span></button><button data-tab="archive" class="${tab === "archive" ? "selected" : ""}" aria-label="İşlem arşivi">${icon("folder-lock")}İşlem arşivi<span>${state.log.length}</span></button><button data-modal="help" aria-label="Operasyon rehberi">${icon("book-open")}Operasyon rehberi</button></nav><div class="mission"><span class="eyebrow">EMİR / 001</span><h3>İktidarın<br>ışığı yoktur.</h3><p>Birini başa getir.<br>Sana bağlı kalmasını sağla.<br>Adını geride bırakma.</p><span class="redacted">YETKİLİ PERSONEL DIŞINDA</span></div><div class="sidebar-bottom"><span class="avatar">Ş</span><div>İstihbarat Şefi<small>Kimlik: gizlenmiş</small></div>${icon("shield-check")}</div></aside><main><header><div class="breadcrumb">BAŞKENT / YER ALTI KATI <span>—</span> ERİŞİM KISITLI</div><div class="header-tools"><span class="prototype">OPERASYON v0.4</span><button class="icon-btn" data-modal="reset" aria-label="Yeni oyun">${icon("rotate-ccw")}</button></div></header><div class="content"><div class="heading"><div><div class="eyebrow">OPERASYON: BOŞ KOLTUK</div><h1>${tab === "desk" ? "Kimse masum kalmayacak." : "Her emir bir iz bırakır."}</h1><p>${tab === "desk" ? "Başkan susuyor. Kabine bekliyor. Siz karar veriyorsunuz." : "Silinmemiş kayıtlar. Verilmiş emirler. Kaçınılmaz sonuçlar."}</p></div><div class="day"><span>SON TARİHE</span><strong>0${DAYS + 1 - state.day}<small>GÜN</small></strong></div></div><div class="overview"><div class="action-budget"><span class="eyebrow">GÜN 0${state.day} / KALAN AP</span><div class="budget">${[0, 1, 2, 3].map((i) => `<span class="${i < state.ap ? "filled" : ""}">${icon("zap")}</span>`).join("")}<strong>${state.ap}<small>/4</small></strong></div></div><div class="suspicion">${meter("DEŞİFRE RİSKİ", state.suspicion, "danger")}<small>${state.suspicion >= 70 ? "Kritik seviye. Karşı istihbarat yaklaşıyor." : "Şüphe 100 olursa operasyon anında biter."}</small></div><div class="countdown">${icon("hourglass")}<div><strong>${state.backed ? ministers.find((m) => m.id === state.backed).name : "Belirlenmedi"}</strong><span>Desteklediğin aday</span></div></div></div>${tab === "desk" ? desk() : `<section class="archive"><div class="section-label">ŞİFRELİ İŞLEM ARŞİVİ <span>${state.orders} EMİR</span></div>${state.log.map((l, i) => `<article><span class="log-id">${String(state.log.length - i).padStart(2, "0")}</span><span class="log-day">GÜN ${l.day}<small>${l.type === "night" ? "GECE" : "MERKEZ"}</small></span><p>${esc(l.text)}</p></article>`).join("")}</section>`}<footer><span>${icon("hard-drive")} ${saveStatus}</span><span>BU ODADA SÖYLENENLER BU ODADA KALIR.</span><button data-modal="firebase">${icon("cloud-off")} Yerel deneme</button></footer></div></main></div>${modal || state.ended ? modalHTML() : ""}`;
+  const languageButton = document.createElement("button");
+  languageButton.className = "language-toggle";
+  languageButton.dataset.language = "";
+  languageButton.setAttribute("aria-label", "Dil değiştir");
+  languageButton.textContent = currentLanguage() === "en" ? "Türkçe" : "English";
+  el.querySelector(".header-tools")?.prepend(languageButton);
+  applyLanguage(el);
   createIcons({ icons });
   bind();
   if (modal || state.ended) {
@@ -306,6 +314,10 @@ function apply(a, payload = null) {
   render();
 }
 function bind() {
+  el.querySelector("[data-language]")?.addEventListener("click", () => {
+    toggleLanguage();
+    render();
+  });
   el.querySelectorAll("[data-verdict]").forEach((button) => {
     button.onclick = () => { reviewDecision = button.dataset.verdict; render(); };
   });
