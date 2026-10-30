@@ -1,10 +1,12 @@
 # Gölge Şef
 
+Türkçe | [English](README_EN.md)
+
 Türkçe, tarayıcı tabanlı siyasi strateji oyunu. Üç bakan arasındaki iktidar mücadelesinde bilgi topla, belgeleri incele ve destekleyeceğin adayı belirle. Oyun yedi gün sürer; her gün dört aksiyon puanın (AP) vardır.
 
 ## Kullanılan teknolojiler
 
-JavaScript, Vite, HTML ve CSS. Testler için Node.js test runner ve jsdom kullanılır.
+JavaScript, Vite, HTML ve CSS. Testler için Node.js test runner kullanılır.
 
 ## Çalıştırma
 

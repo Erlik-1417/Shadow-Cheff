@@ -1,10 +1,12 @@
 # Gölge Şef
 
+[Türkçe](README.md) | English
+
 A Turkish browser-based political strategy game. Gather information, review evidence, and choose the candidate you want to support in a power struggle between three ministers. The game lasts seven days, and you have four action points (AP) each day.
 
 ## Technologies
 
-JavaScript, Vite, HTML, and CSS. Tests use the Node.js test runner and jsdom.
+JavaScript, Vite, HTML, and CSS. Tests use the Node.js test runner.
 
 ## Run the project
 
