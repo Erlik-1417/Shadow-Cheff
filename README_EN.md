@@ -2,7 +2,7 @@
 
 [Türkçe](README.md) | English
 
-A Turkish browser-based political strategy game. Gather information, review evidence, and choose the candidate you want to support in a power struggle between three ministers. The game lasts seven days, and you have four action points (AP) each day.
+A browser-based political strategy game. Gather information, review evidence, and choose the candidate you want to support in a power struggle between three ministers. The game lasts seven days, and you have four action points (AP) each day.
 
 ## Technologies
 
