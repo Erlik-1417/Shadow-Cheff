@@ -94,8 +94,13 @@ let dialogTrigger = null;
 let reviewDecision = null;
 function focusSelector(element) {
   if (!element?.attributes) return null;
-  const attributes = [...element.attributes].filter((attribute) => attribute.name.startsWith("data-"));
-  return attributes.length ? attributes.map((attribute) => `[${attribute.name}="${attribute.value}"]`).join("") : null;
+  let selector = "";
+  for (const attribute of element.attributes) {
+    if (attribute.name.startsWith("data-")) {
+      selector += `[${attribute.name}="${attribute.value}"]`;
+    }
+  }
+  return selector || null;
 }
 const el = document.querySelector("#app"),
   icon = (n) => `<i data-lucide="${n}" aria-hidden="true"></i>`;
@@ -128,20 +133,18 @@ function save() {
 function meter(label, value, kind = "") {
   return `<div class="meter-label"><span>${label}</span><strong>${value}<small>/100</small></strong></div><div class="meter ${kind}"><span style="width:${value}%"></span></div>`;
 }
-const stageName = (f) =>
-  f.stage === "cleared" ? "İHBAR DESTEKLENMİYOR" : f.exposed
-    ? "İFŞA EDİLDİ"
-    : f.public
-      ? "KAMUYA AÇIK"
-      : f.stage === "verified"
-        ? f.pressured
-          ? "BASKI KURULDU"
-          : "DOĞRULANDI"
-        : f.stage === "raw"
-          ? "İNCELEME BEKLİYOR"
-          : f.stage === "pending"
-            ? "EKİP SAHADA"
-            : "İHBAR";
+function stageName(file) {
+  if (file.stage === "cleared") return "İHBAR DESTEKLENMİYOR";
+  if (file.exposed) return "İFŞA EDİLDİ";
+  if (file.public) return "KAMUYA AÇIK";
+  if (file.stage === "verified") {
+    if (file.pressured) return "BASKI KURULDU";
+    return "DOĞRULANDI";
+  }
+  if (file.stage === "raw") return "İNCELEME BEKLİYOR";
+  if (file.stage === "pending") return "EKİP SAHADA";
+  return "İHBAR";
+}
 function dossier() {
   const p = person();
   const m = minister();
@@ -158,7 +161,7 @@ function dossier() {
     : event.claim;
   return `<section class="dossier">
     <div class="section-label"><span>ŞAHIS DOSYASI / 0${ministers.indexOf(m) + 1}</span><span class="stamp">ÇOK GİZLİ</span></div>
-    <div class="profile"><div class="portrait"><span>${m.initials}</span><svg viewBox="0 0 100 110" aria-hidden="true"><circle cx="50" cy="33" r="22"/><path d="M7 110V91Q10 64 35 62L50 82L65 62Q90 64 93 91V110Z"/></svg><b>GÖZETİM ALTINDA</b></div>
+    <div class="profile"><div class="portrait"><img src="${m.portrait}" alt="${m.name} portresi" width="96" height="120"><span>${m.initials}</span><b>GÖZETİM ALTINDA</b></div>
     <div><span class="eyebrow">${trait.name}</span><h2>${m.name}</h2><p>${m.role}</p></div></div>
     <p class="bio">${trait.description}</p>
     <div class="stats">${meter("Siyasi nüfuz", p.power)}${meter("Üzerindeki kontrolün", p.control, "gold")}${meter("Sana karşı öfkesi", p.anger, "danger")}</div>
@@ -213,7 +216,7 @@ function desk() {
   return `<section class="briefing"><div class="briefing-icon">${icon("radio-tower")}</div><div><div class="eyebrow">ŞİFRELİ BRİFİNG · GÜN 0${state.day}</div><h3>${briefings[state.day - 1][0]}</h3><p>${briefings[state.day - 1][1]}</p>${state.night.length ? '<button class="text-btn" data-modal="night">Son gece raporunu aç →</button>' : ""}</div><span class="briefing-number">0${state.day}</span></section>${relationsHTML()}${intelligenceHTML()}<div class="workspace"><section class="candidates"><div class="section-label">GÖZETİMDEKİ İSİMLER <span>03</span></div>${ministers
     .map((m, i) => {
       const p = state.people[i];
-      return `<button class="candidate ${selected === m.id ? "chosen" : ""}" data-select="${m.id}"><div class="candidate-top"><span class="monogram">${m.initials}</span><span class="candidate-title"><strong>${m.name}</strong><small>${personalities[p.personality].name} · ${m.role}</small></span>${icon(state.backed === m.id ? "flag" : "chevron-right")}</div><div class="candidate-stat"><span>Seçim gücü <b>${score(state, p)}</b></span><span>Kontrol <b>%${p.control}</b></span></div><div class="mini-meter"><span style="width:${Math.min(100, score(state, p))}%"></span></div><div class="candidate-foot">Nüfuz ${p.power} + ittifak ${score(state, p) - p.power}<span>Öfke ${p.anger}</span></div></button>`;
+      return `<button class="candidate ${selected === m.id ? "chosen" : ""}" data-select="${m.id}"><div class="candidate-top"><img class="candidate-portrait" src="${m.portrait}" alt="" width="44" height="55"><span class="candidate-title"><strong>${m.name}</strong><small>${personalities[p.personality].name} · ${m.role}</small></span>${icon(state.backed === m.id ? "flag" : "chevron-right")}</div><div class="candidate-stat"><span>Seçim gücü <b>${score(state, p)}</b></span><span>Kontrol <b>%${p.control}</b></span></div><div class="mini-meter"><span style="width:${Math.min(100, score(state, p))}%"></span></div><div class="candidate-foot">Nüfuz ${p.power} + ittifak ${score(state, p) - p.power}<span>Öfke ${p.anger}</span></div></button>`;
     })
     .join(
       "",
@@ -254,7 +257,7 @@ function render() {
   const mission = el.querySelector(".mission");
   if (mission) {
     const missionText = mission.querySelector("p");
-    if (missionText) missionText.innerHTML = "Birini başa getir.<br>Sana bağlı kalmasını sağla.<br>İpleri sıkı tut.";
+    if (missionText) missionText.innerHTML = "Birini başa getir.<br>İpleri sıkı tut.<br>Sana bağlı kalmasını sağla.";
     const access = mission.querySelector(".redacted");
     if (access) access.textContent = "YETKİLİ PERSONEL DIŞINDA GİRİŞ YASAKTIR";
   }
