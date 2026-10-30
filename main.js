@@ -66,7 +66,17 @@ import {
   caseData, DAYS, commandInfo, forecast, canImproveRelation, validSave, personalities, containmentCost,
 } from "./game.js";
 import { applyLanguage, currentLanguage, toggleLanguage } from "./languages.js";
+import { connectFirebase, firebaseConfigFromEnv } from "./firebase.js";
 let state = fresh();
+let cloud = null;
+let cloudUser = null;
+let firebaseMessage = "";
+let firebaseMode = "login";
+let sidebarCollapsed = localStorage.getItem("golge-sef-sidebar") === "collapsed";
+try {
+  const config = firebaseConfigFromEnv();
+  if (config) cloud = connectFirebase(config);
+} catch {}
 let initialSaveMessage = "";
 try {
   const v = JSON.parse(localStorage.getItem("golge-sef-v4"));
@@ -97,6 +107,13 @@ const esc = (s) =>
         c
       ],
   );
+const firebaseError = (error) => ({
+  "auth/email-already-in-use": "Bu e-posta zaten kullanılıyor.",
+  "auth/invalid-email": "Geçerli bir e-posta adresi gir.",
+  "auth/weak-password": "Şifre en az 6 karakter olmalı.",
+  "auth/invalid-credential": "E-posta veya şifre hatalı.",
+  "auth/too-many-requests": "Çok fazla deneme yapıldı. Biraz sonra tekrar dene.",
+}[error?.code] || `Firebase işlemi başarısız oldu${error?.code ? ` (${error.code})` : ""}. Bilgilerini ve Firebase ayarlarını kontrol et.`);
 const person = () => state.people.find((p) => p.id === selected),
   minister = () => ministers.find((m) => m.id === selected);
 function save() {
@@ -106,6 +123,7 @@ function save() {
   } catch {
     saveStatus = "Tarayıcı kaydı kullanılamıyor";
   }
+  if (cloud && cloudUser) cloud.saveGame(state).then(() => { saveStatus = "Buluta kaydedildi"; }).catch(() => { saveStatus = "Yerel kayıt kullanılıyor"; });
 }
 function meter(label, value, kind = "") {
   return `<div class="meter-label"><span>${label}</span><strong>${value}<small>/100</small></strong></div><div class="meter ${kind}"><span style="width:${value}%"></span></div>`;
@@ -218,6 +236,28 @@ function render() {
   if (!hadDialog && (modal || state.ended)) dialogTrigger = previousFocus;
   el.innerHTML = `<div class="shell"><aside class="sidebar"><a class="brand" href="#">${icon("fingerprint")}<span>GÖLGE ŞEF<small>MİLLÎ İSTİHBARAT DAİRESİ</small></span></a><div class="classification"><span></span> HAT DİNLENİYOR OLABİLİR</div><div class="nav-caption">YETKİ / OMEGA</div><nav><button data-tab="desk" class="${tab === "desk" ? "selected" : ""}" aria-label="Operasyon masası">${icon("panels-top-left")}Operasyon masası<span>01</span></button><button data-tab="archive" class="${tab === "archive" ? "selected" : ""}" aria-label="İşlem arşivi">${icon("folder-lock")}İşlem arşivi<span>${state.log.length}</span></button><button data-modal="help" aria-label="Operasyon rehberi">${icon("book-open")}Operasyon rehberi</button></nav><div class="mission"><span class="eyebrow">EMİR / 001</span><h3>İktidarın<br>ışığı yoktur.</h3><p>Birini başa getir.<br>Sana bağlı kalmasını sağla.<br>Adını geride bırakma.</p><span class="redacted">YETKİLİ PERSONEL DIŞINDA</span></div><div class="sidebar-bottom"><span class="avatar">Ş</span><div>İstihbarat Şefi<small>Kimlik: gizlenmiş</small></div>${icon("shield-check")}</div></aside><main><header><div class="breadcrumb">BAŞKENT / YER ALTI KATI <span>—</span> ERİŞİM KISITLI</div><div class="header-tools"><span class="prototype">OPERASYON v0.4</span><button class="icon-btn" data-modal="reset" aria-label="Yeni oyun">${icon("rotate-ccw")}</button></div></header><div class="content"><div class="heading"><div><div class="eyebrow">OPERASYON: BOŞ KOLTUK</div><h1>${tab === "desk" ? "Kimse masum kalmayacak." : "Her emir bir iz bırakır."}</h1><p>${tab === "desk" ? "Başkan susuyor. Kabine bekliyor. Siz karar veriyorsunuz." : "Silinmemiş kayıtlar. Verilmiş emirler. Kaçınılmaz sonuçlar."}</p></div><div class="day"><span>SON TARİHE</span><strong>0${DAYS + 1 - state.day}<small>GÜN</small></strong></div></div><div class="overview"><div class="action-budget"><span class="eyebrow">GÜN 0${state.day} / KALAN AP</span><div class="budget">${[0, 1, 2, 3].map((i) => `<span class="${i < state.ap ? "filled" : ""}">${icon("zap")}</span>`).join("")}<strong>${state.ap}<small>/4</small></strong></div></div><div class="suspicion">${meter("DEŞİFRE RİSKİ", state.suspicion, "danger")}<small>${state.suspicion >= 70 ? "Kritik seviye. Karşı istihbarat yaklaşıyor." : "Şüphe 100 olursa operasyon anında biter."}</small></div><div class="countdown">${icon("hourglass")}<div><strong>${state.backed ? ministers.find((m) => m.id === state.backed).name : "Belirlenmedi"}</strong><span>Desteklediğin aday</span></div></div></div>${tab === "desk" ? desk() : `<section class="archive"><div class="section-label">ŞİFRELİ İŞLEM ARŞİVİ <span>${state.orders} EMİR</span></div>${state.log.map((l, i) => `<article><span class="log-id">${String(state.log.length - i).padStart(2, "0")}</span><span class="log-day">GÜN ${l.day}<small>${l.type === "night" ? "GECE" : "MERKEZ"}</small></span><p>${esc(l.text)}</p></article>`).join("")}</section>`}<footer><span>${icon("hard-drive")} ${saveStatus}</span><span>BU ODADA SÖYLENENLER BU ODADA KALIR.</span><button data-modal="firebase">${icon("cloud-off")} Yerel deneme</button></footer></div></main></div>${modal || state.ended ? modalHTML() : ""}`;
   const languageButton = document.createElement("button");
+  const shell = el.querySelector(".shell");
+  if (sidebarCollapsed) shell?.classList.add("sidebar-collapsed");
+  const sidebar = el.querySelector(".sidebar");
+  if (sidebar) {
+    const toggle = document.createElement("button");
+    toggle.className = "sidebar-toggle";
+    toggle.dataset.sidebarToggle = "";
+    toggle.setAttribute("aria-label", sidebarCollapsed ? "Menüyü aç" : "Menüyü daralt");
+    toggle.textContent = sidebarCollapsed ? "›" : "‹";
+    sidebar.prepend(toggle);
+  }
+  const navCaption = el.querySelector(".nav-caption");
+  if (navCaption) navCaption.textContent = "YETKİ";
+  const breadcrumb = el.querySelector(".breadcrumb");
+  if (breadcrumb) breadcrumb.textContent = "BAŞKENT / YER ALTI KATI";
+  const mission = el.querySelector(".mission");
+  if (mission) {
+    const missionText = mission.querySelector("p");
+    if (missionText) missionText.innerHTML = "Birini başa getir.<br>Sana bağlı kalmasını sağla.<br>İpleri sıkı tut.";
+    const access = mission.querySelector(".redacted");
+    if (access) access.textContent = "YETKİLİ PERSONEL DIŞINDA GİRİŞ YASAKTIR";
+  }
   languageButton.className = "language-toggle";
   languageButton.dataset.language = "";
   languageButton.setAttribute("aria-label", "Dil değiştir");
@@ -227,7 +267,6 @@ function render() {
   createIcons({ icons });
   bind();
   if (modal || state.ended) {
-    el.querySelector(".shell").inert = true;
     if (!hadDialog) el.querySelector(".modal button")?.focus();
     else if (previousFocus) el.querySelector(previousFocus)?.focus();
   } else {
@@ -300,8 +339,7 @@ function modalHTML() {
     content =
       '<span class="eyebrow">YENİ OPERASYON</span><h2>Geçmişi kapat.</h2><p>Mevcut v0.4 ilerlemesi silinir. Yeni kişilikler, güçler, ilişkiler ve farklı olaylarla ilk güne dönersin.</p><button class="primary" data-reset>Yeni oyunu başlat</button>';
   } else {
-    content =
-      '<span class="eyebrow">PROTOTİP DURUMU</span><h2>Bu cihazda kayıtlı.</h2><p>İlerleme tarayıcıya kaydedilir. Firebase hesap ve bulut kaydı henüz etkin değildir. Yeni mekanikler nedeniyle Önceki sürümlerin kayıtları bu sürüme aktarılmadı; eski kayıt silinmedi.</p>';
+    content = `<span class="eyebrow">BULUT KAYDI</span><h2>${cloudUser ? "Bulut kaydı etkin." : firebaseMode === "register" ? "Hesap oluştur" : "Giriş yap"}</h2><p>${cloud ? "Firebase bağlantısı hazır. İlerlemeni cihazlar arasında saklayabilirsin." : "Firebase ayarları bulunamadı. İlerleme bu tarayıcıya kaydediliyor."}</p>${firebaseMessage ? `<p class="firebase-message">${esc(firebaseMessage)}</p>` : ""}${cloud && !cloudUser ? `${firebaseMode === "register" ? '<input data-username placeholder="Kullanıcı adı">' : ""}<input data-email type="email" placeholder="E-posta"><input data-password type="password" placeholder="Şifre"><div class="modal-actions">${firebaseMode === "register" ? '<button type="button" class="primary" data-register>Hesap oluştur</button><button type="button" data-switch-login>Giriş yap</button>' : '<button type="button" class="primary" data-login>Giriş yap</button><button type="button" data-switch-register>Hesap oluştur</button>'}</div>` : cloudUser ? '<button type="button" class="primary" data-cloud-load>Bulut kaydını yükle</button><button type="button" data-logout>Çıkış yap</button>' : ""}`;
   }
   return `<div class="overlay"><section class="modal ${wide ? "wide" : ""}" role="dialog" aria-modal="true" aria-label="Operasyon paneli">${!state.ended ? `<button class="close icon-btn" data-close aria-label="Kapat">${icon("x")}</button>` : ""}${content}</section></div>`;
 }
@@ -314,6 +352,11 @@ function apply(a, payload = null) {
   render();
 }
 function bind() {
+  el.querySelector("[data-sidebar-toggle]")?.addEventListener("click", () => {
+    sidebarCollapsed = !sidebarCollapsed;
+    localStorage.setItem("golge-sef-sidebar", sidebarCollapsed ? "collapsed" : "expanded");
+    render();
+  });
   el.querySelector("[data-language]")?.addEventListener("click", () => {
     toggleLanguage();
     render();
@@ -370,6 +413,16 @@ function bind() {
     save();
     render();
   });
+  el.querySelector("[data-register]")?.addEventListener("click", async () => {
+    try { cloudUser = (await cloud.register(el.querySelector("[data-email]").value, el.querySelector("[data-password]").value)).user; firebaseMessage = "Hesap oluşturuldu. Bulut kaydı etkin."; save(); render(); } catch (error) { firebaseMessage = firebaseError(error); render(); }
+  });
+  el.querySelector("[data-switch-login]")?.addEventListener("click", () => { firebaseMode = "login"; firebaseMessage = ""; render(); });
+  el.querySelector("[data-switch-register]")?.addEventListener("click", () => { firebaseMode = "register"; firebaseMessage = ""; render(); });
+  el.querySelector("[data-login]")?.addEventListener("click", async () => {
+    try { cloudUser = (await cloud.login(el.querySelector("[data-email]").value, el.querySelector("[data-password]").value)).user; const saved = await cloud.loadGame(); if (validSave(saved)) state = saved; firebaseMessage = saved ? "Giriş başarılı. Bulut kaydı yüklendi." : "Giriş başarılı. Henüz bulut kaydı yok."; render(); } catch (error) { firebaseMessage = firebaseError(error); render(); }
+  });
+  el.querySelector("[data-cloud-load]")?.addEventListener("click", async () => { const saved = await cloud.loadGame(); if (validSave(saved)) state = saved; saveStatus = saved ? "Bulut kaydı yüklendi" : "Bulut kaydı bulunamadı"; modal = null; render(); });
+  el.querySelector("[data-logout]")?.addEventListener("click", async () => { await cloud.logout(); cloudUser = null; modal = null; render(); });
   el.querySelector("[data-back]")?.addEventListener("click", () => {
     state.backed = selected;
     save();

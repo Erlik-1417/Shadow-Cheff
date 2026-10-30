@@ -1,4 +1,9 @@
 const translations = {
+  "YETKİ": "AUTHORITY",
+  "BAŞKENT / YER ALTI KATI": "CAPITAL / LOWER LEVEL",
+  "İPLERİ SIKI TUT.": "KEEP THE STRINGS TIGHT.",
+  "İpleri sıkı tut.": "Keep the strings tight.",
+  "YETKİLİ PERSONEL DIŞINDA GİRİŞ YASAKTIR": "AUTHORIZED PERSONNEL ONLY",
   "HAT DİNLENİYOR OLABİLİR": "THE LINE MAY BE MONITORED",
   "YETKİ / OMEGA": "AUTHORITY / OMEGA",
   "Operasyon masası": "Operations desk",
